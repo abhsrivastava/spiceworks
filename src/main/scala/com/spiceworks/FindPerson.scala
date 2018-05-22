@@ -1,19 +1,24 @@
 package com.spiceworks
 
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map => MutableMap}
 
 // the complexity of our algorithm is n-squared.
 object FindPerson extends App {
     val fileName = "input.csv"
     // if this map becomes too big, move it in a distributed cache
-    var seen = Map[String, Boolean]()
+    var seen = MutableMap[String, Boolean]()
     val lines = Source.fromResource(fileName)
         .getLines
         .filterNot(line => line.replace(" ", "") == ",,")
-    val listOfSet = groupLocalIds(lines)
-    listOfSet.zipWithIndex.foreach{case (set, i) =>
-        println(s"""person id ${i + 1} local ids ${set.mkString(",")}""")
+    generatePersonIds(groupLocalIds(lines)).foreach{case (k, v) => 
+        println(s"""personid $k local ids ${v.mkString(",")}""")
+    }
+
+    def generatePersonIds(list: List[Set[String]]) : Map[Int, Set[String]] = {
+        list.zipWithIndex.map{case (set, i) =>
+            (i + 1, set)
+        }.toMap
     }
 
     def groupLocalIds(lines: Iterator[String]) : List[Set[String]] = {
